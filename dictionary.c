@@ -59,33 +59,36 @@ bool load(const char *dictionary)
 
         node *new_node = malloc(sizeof(node)); //Allocate space for a new node
 
+
+
         if (new_node == NULL)  //Checks if we ran out of memory
         {
             unload();
             return false;
         }
 
-        c++; //count the words
+
 
         strcpy(new_node -> word, word); //copy the word into the node
 
+        new_node-> next = NULL;
 
-        if(hashtable [head] == NULL) //if we're at the first node
+        if(hashtable[head] == NULL) //if we're at the first node
         {
-            hashtable [head] = new_node;
-            new_node -> next = NULL;
+
+            hashtable[head] = new_node;
+
         }
         else
         {
-            new_node -> next = hashtable [head] -> next;
-            hashtable [head] = new_node;
+
+            new_node-> next = hashtable[head];
+            hashtable[head] = new_node;
+
         }
 
-
-
-
+        c++;    //count the words
     }
-
     // Close dictionary
     fclose(file);
 
@@ -102,6 +105,7 @@ unsigned int size(void)
 // Returns true if word is in dictionary else false
 bool check(const char *word)
 {
+
     int head = hash(word);
 
     node *cursor = hashtable[head];
@@ -112,6 +116,7 @@ bool check(const char *word)
         if (!result)
         {
             cursor = cursor -> next;
+
         }
         else
         {
@@ -120,8 +125,6 @@ bool check(const char *word)
     }
 
     return false;
-
-
 }
 
 // Unloads dictionary from memory, returning true if successful else false
@@ -136,7 +139,8 @@ bool unload(void)
             cursor = cursor -> next;
             free(temp);
         }
+
     }
-    // TODO
+
     return true;
 }
