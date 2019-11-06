@@ -113,7 +113,7 @@ bool check(const char *word)
     while (cursor != NULL)
     {
         int result = strcasecmp(word, cursor-> word);
-        if (!result)
+        if (result)
         {
             cursor = cursor -> next;
 
@@ -122,6 +122,7 @@ bool check(const char *word)
         {
             return true;
         }
+
     }
 
     return false;
