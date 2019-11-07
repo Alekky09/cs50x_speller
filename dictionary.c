@@ -10,7 +10,7 @@
 #include "dictionary.h"
 
 // Represents number of buckets in a hash table
-#define N 26
+#define N 1170
 
 // Represents a node in a hash table
 typedef struct node
@@ -26,7 +26,13 @@ node *hashtable[N];
 // Hashes word to a number between 0 and 25, inclusive, based on its first letter
 unsigned int hash(const char *word)
 {
-    return tolower(word[0]) - 'a';
+    int i = tolower(word[0]) - 'a';
+    int j = strlen(word);
+
+
+    return i*j;
+
+
 }
 
 int c = 0; //initialize the dictionary word counter
