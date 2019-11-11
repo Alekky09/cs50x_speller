@@ -125,6 +125,11 @@ bool check(const char *word)
     {
         int bucket = tolower(word[i]) - 'a';
 
+        if(word[i] == '\'')
+            {
+                bucket = 26;
+            }
+
         if(cursor-> children[bucket] == NULL)
         {
             return false;
@@ -162,6 +167,8 @@ bool unload(void)
     node *cursor = root;
 
     cleanse(cursor);
+
+    free(root);
 
     return true;
 }
