@@ -1,49 +1,45 @@
 // Implements a dictionary's functionality
 
-#include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
+#include <ctype.h>
 
 #include "dictionary.h"
 
-// Represents number of buckets in a hash table
-#define N 1170
+// Represents number of children for each node in a trie
+#define N 27
 
-// Represents a node in a hash table
+// Represents a node in a trie
 typedef struct node
 {
-    char word[LENGTH + 1];
-    struct node *next;
+    bool is_word;
+    struct node *children[N];
 }
 node;
 
-// Represents a hash table
-node *hashtable[N];
+// Represents a trie
+node *root;
 
-// Hashes word to a number between 0 and 25, inclusive, based on its first letter
-unsigned int hash(const char *word)
-{
-    int i = tolower(word[0]) - 'a';
-    int j = strlen(word);
-
-
-    return i*j;
-
-
-}
-
-int c = 0; //initialize the dictionary word counter
+//Initialize dictionary word counting
+int word_count = 0;
 
 // Loads dictionary into memory, returning true if successful else false
 bool load(const char *dictionary)
 {
-    // Initialize hash table
+    // Initialize trie
+    root = malloc(sizeof(node));
+
+    if (root == NULL)
+    {
+        return false;
+    }
+    root->is_word = false;
+
     for (int i = 0; i < N; i++)
     {
-        hashtable[i] = NULL;
+        root->children[i] = NULL;
     }
 
     // Open dictionary
@@ -54,100 +50,118 @@ bool load(const char *dictionary)
         return false;
     }
 
-
     // Buffer for a word
     char word[LENGTH + 1];
+    node *new_node = NULL;
 
-    // Insert words into hash table
+    // Insert words into trie
     while (fscanf(file, "%s", word) != EOF)
     {
-        int head = hash(word);
-
-        node *new_node = malloc(sizeof(node)); //Allocate space for a new node
+        node *cursor = root;
 
 
-
-        if (new_node == NULL)  //Checks if we ran out of memory
+        for(int i = 0, L = strlen(word); i < L; i++) //Iterating through the word
         {
-            unload();
-            return false;
+            int bucket = word[i] - 'a'; //Which bucket should the letter go into
+
+            if(word[i] == '\'')
+            {
+                bucket = 26;
+            }
+
+
+            if(cursor-> children[bucket] == NULL)
+            {
+                new_node = malloc(sizeof(node));
+
+                if (new_node == NULL)
+                {
+                    return false;
+                }
+                new_node->is_word = false;
+
+                for (int j = 0; j < 27; j++)
+                {
+                    new_node-> children[j] = NULL;
+                }
+
+                cursor-> children[bucket] = new_node;
+                cursor = cursor-> children[bucket];
+
+            }
+            else
+            {
+                cursor = cursor-> children[bucket];
+            }
+
         }
 
 
-
-        strcpy(new_node -> word, word); //copy the word into the node
-
-        new_node-> next = NULL;
-
-        if(hashtable[head] == NULL) //if we're at the first node
-        {
-
-            hashtable[head] = new_node;
-
-        }
-        else
-        {
-
-            new_node-> next = hashtable[head];
-            hashtable[head] = new_node;
-
-        }
-
-        c++;    //count the words
+        cursor-> is_word = true;
+        word_count++;
     }
+
     // Close dictionary
     fclose(file);
 
     // Indicate success
     return true;
+
+
 }
 
 // Returns number of words in dictionary if loaded else 0 if not yet loaded
 unsigned int size(void)
 {
-    return c;
+    return word_count;
 }
 
 // Returns true if word is in dictionary else false
 bool check(const char *word)
 {
+    node *cursor = root;
 
-    int head = hash(word);
-
-    node *cursor = hashtable[head];
-
-    while (cursor != NULL)
+    for(int i = 0, L = strlen(word); i < L; i++)
     {
-        int result = strcasecmp(word, cursor-> word);
-        if (result)
-        {
-            cursor = cursor -> next;
+        int bucket = tolower(word[i]) - 'a';
 
+        if(cursor-> children[bucket] == NULL)
+        {
+            return false;
         }
         else
         {
-            return true;
+            cursor = cursor-> children[bucket];
         }
-
+    }
+    if(cursor-> is_word == true)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
     }
 
-    return false;
+}
+
+void cleanse(node *ptr)
+{
+    for(int i = 0; i < N; i++)
+    {
+        if (ptr->children[i] != NULL)
+        {
+            cleanse(ptr->children[i]);
+        }
+    }
 }
 
 // Unloads dictionary from memory, returning true if successful else false
 bool unload(void)
 {
-    for(int i = 0; i < N; i++)
-    {
-        node *cursor = hashtable[i];
-        while (cursor != NULL)
-        {
-            node *temp = cursor;
-            cursor = cursor -> next;
-            free(temp);
-        }
+    node *cursor = root;
 
-    }
+    cleanse(cursor);
 
     return true;
 }
