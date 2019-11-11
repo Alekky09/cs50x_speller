@@ -159,6 +159,7 @@ void cleanse(node *ptr)
             cleanse(ptr->children[i]);
         }
     }
+    free(ptr);
 }
 
 // Unloads dictionary from memory, returning true if successful else false
@@ -167,8 +168,6 @@ bool unload(void)
     node *cursor = root;
 
     cleanse(cursor);
-
-    free(root);
 
     return true;
 }
